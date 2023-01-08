@@ -2,6 +2,7 @@ package devices
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"strings"
 	"time"
@@ -28,7 +29,7 @@ func (dc *OLTHuaweiSshConnector) Connect() error {
 			ssh.Password(os.Getenv("SSH_PASSWORD")),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         time.Second * 10,
+		Timeout:         dc.Timeout(),
 	}
 
 	host := os.Getenv("SSH_HOST")
@@ -45,7 +46,7 @@ func (dc *OLTHuaweiSshConnector) Connect() error {
 }
 
 // SendCommand implements domain.DeviceConnectorProvider
-func (dc *OLTHuaweiSshConnector) SendCommand(command model.DeviceCommand) (string, error) {
+func (dc *OLTHuaweiSshConnector) SendCommand(command *model.DeviceCommand) (string, error) {
 	commands := strings.Join(command.Commands, "\n")
 
 	ready := make(chan bool)
@@ -69,7 +70,7 @@ func (dc *OLTHuaweiSshConnector) SendCommand(command model.DeviceCommand) (strin
 		case <-ready:
 			return buffer.String(), nil
 		case <-time.After(command.Timeout):
-			return buffer.String(), nil
+			return buffer.String(), errors.New("timeout")
 		}
 	}
 
@@ -82,6 +83,8 @@ func (dc *OLTHuaweiSshConnector) StartSession() error {
 		return err
 	}
 
+	dc.session = session
+
 	session.Stderr = os.Stderr
 
 	modes := ssh.TerminalModes{
@@ -91,11 +94,8 @@ func (dc *OLTHuaweiSshConnector) StartSession() error {
 	}
 
 	if err := session.RequestPty("xterm", 1000, 1000, modes); err != nil {
-		session.Close()
 		return err
 	}
-
-	dc.session = session
 
 	return nil
 }
@@ -107,7 +107,11 @@ func (dc *OLTHuaweiSshConnector) StopSession() error {
 		return err
 	}
 
-	err = dc.client.Close()
+	return nil
+}
+
+func (dc *OLTHuaweiSshConnector) Stop() error {
+	err := dc.client.Close()
 	if err != nil {
 		return err
 	}
@@ -118,4 +122,16 @@ func (dc *OLTHuaweiSshConnector) StopSession() error {
 // Timeout implements domain.DeviceConnectorProvider
 func (*OLTHuaweiSshConnector) Timeout() time.Duration {
 	return time.Second * 10
+}
+
+// OutputFormat implements domain.DeviceConnectorProvider
+func (*OLTHuaweiSshConnector) OutputFormat(stdout string, command *model.DeviceCommand) [][][]string {
+	// Using regex, check lines in output that match the command OutputRegex
+	// and return them as a []string
+	filtered := make([][][]string, len(command.OutputRegex))
+	for index, regex := range command.OutputRegex {
+		filtered[index] = regex.FindAllStringSubmatch(stdout, -1)
+	}
+
+	return filtered
 }

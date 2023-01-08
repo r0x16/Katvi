@@ -1,10 +1,13 @@
 package model
 
-import "time"
+import (
+	"regexp"
+	"time"
+)
 
 type DeviceCommand struct {
 	Commands    []string
-	OutputRegex []string
+	OutputRegex []regexp.Regexp
 	ExitRegex   string
 	Timeout     time.Duration
 }

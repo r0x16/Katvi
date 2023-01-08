@@ -8,8 +8,10 @@ import (
 
 type DeviceConnectorProvider interface {
 	Connect() error
+	Stop() error
 	StartSession() error
 	StopSession() error
 	Timeout() time.Duration
-	SendCommand(model.DeviceCommand) (string, error)
+	SendCommand(*model.DeviceCommand) (string, error)
+	OutputFormat(string, *model.DeviceCommand) [][][]string
 }
