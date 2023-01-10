@@ -7,7 +7,7 @@ import (
 
 type DeviceCommand struct {
 	Commands    []string
-	OutputRegex []regexp.Regexp
-	ExitRegex   string
+	OutputRegex []*regexp.Regexp
+	ExitRegex   *regexp.Regexp
 	Timeout     time.Duration
 }

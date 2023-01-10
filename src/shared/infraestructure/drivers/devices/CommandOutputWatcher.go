@@ -11,7 +11,7 @@ type CommandOutputWatcher struct {
 	Buffer    *bytes.Buffer
 	Ready     chan bool
 	Connector domain.DeviceConnectorProvider
-	ExitRegex string
+	ExitRegex *regexp.Regexp
 }
 
 func (c *CommandOutputWatcher) Write(p []byte) (n int, err error) {
@@ -22,7 +22,7 @@ func (c *CommandOutputWatcher) Write(p []byte) (n int, err error) {
 
 	// Loop through all lines in the buffer
 	// If any line matches the regex, send 'true' to the 'ready' channel
-	regexp := regexp.MustCompile(c.ExitRegex)
+	regexp := c.ExitRegex
 	for _, line := range bytes.Split(c.Buffer.Bytes(), []byte("\n")) {
 		if regexp.Match(line) {
 			c.Ready <- true
