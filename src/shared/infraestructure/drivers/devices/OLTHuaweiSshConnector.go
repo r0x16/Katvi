@@ -47,7 +47,7 @@ func (dc *OLTHuaweiSshConnector) Connect() error {
 
 // SendCommand implements domain.DeviceConnectorProvider
 func (dc *OLTHuaweiSshConnector) SendCommand(command *model.DeviceCommand) (string, error) {
-	commands := strings.Join(command.Commands, "\n")
+	commands := strings.Join(command.Commands, "\r\n")
 
 	ready := make(chan bool)
 	buffer := &CommandOutputWatcher{
