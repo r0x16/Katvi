@@ -14,7 +14,7 @@ import (
 
 func ListFrameAction(c echo.Context, bundle *drivers.ApplicationBundle) error {
 
-	lister := getLister()
+	lister := getFrameLister()
 
 	frames, err := lister.List()
 	if err != nil {
@@ -46,7 +46,7 @@ func getFrameListCommand() *model.DeviceCommand {
 
 }
 
-func getLister() *app.FrameLister {
+func getFrameLister() *app.FrameLister {
 	command := getFrameListCommand()
 	connector := &devices.OLTHuaweiSshConnector{}
 
