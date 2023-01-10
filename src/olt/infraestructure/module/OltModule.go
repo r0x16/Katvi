@@ -16,5 +16,6 @@ var _ domain.ApplicationModule = &OltModule{}
 func (m *OltModule) Setup() {
 	olt := m.Bundle.Server.Group("/olt")
 
-	olt.GET("frames", m.Bundle.ActionInjection(action.ListFrameAction))
+	olt.GET("/frame", m.Bundle.ActionInjection(action.ListFrameAction))
+	olt.GET("/frame/:frameId/boards", m.Bundle.ActionInjection(action.ListBoardAction))
 }
