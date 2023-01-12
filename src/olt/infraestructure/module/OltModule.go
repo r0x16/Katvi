@@ -17,5 +17,6 @@ func (m *OltModule) Setup() {
 	olt := m.Bundle.Server.Group("/olt")
 
 	olt.GET("/frame", m.Bundle.ActionInjection(action.ListFrameAction))
-	olt.GET("/frame/:frameId/boards", m.Bundle.ActionInjection(action.ListBoardAction))
+	olt.GET("/frame/:frameId/slots", m.Bundle.ActionInjection(action.ListBoardAction))
+	olt.GET("/slot/:frameId/:boardId/pon", m.Bundle.ActionInjection(action.ListPonAction))
 }
