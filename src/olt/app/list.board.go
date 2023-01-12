@@ -2,7 +2,6 @@ package app
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/r0x16/Katvi/src/olt/domain/responses"
 	"github.com/r0x16/Katvi/src/shared/app"
@@ -56,9 +55,7 @@ func (lister *BoardLister) validateOutput(output *model.CommandOutput) error {
 
 func (lister *BoardLister) parseOutput(output *model.CommandOutput) (*responses.BoardListOutputCollection, error) {
 	boards := &responses.BoardListOutputCollection{}
-	boards.BoardListOutput = make([]*responses.BoardListOutput, len(output.FilteredOutput[0]))
-
-	fmt.Println(output.Stdout)
+	boards.BoardListOutput = make([]*responses.BoardListOutput, len(output.FilteredOutput[BOARD_LIST_INDEX]))
 
 	total := len(output.FilteredOutput[0])
 	boards.TotalBoardCount = total
