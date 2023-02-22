@@ -1,7 +1,7 @@
 package responses
 
 type PonListOutput struct {
-	PortId      string `json:"port_id"`
+	PortId      string `json:"id"`
 	PortType    string `json:"port_name"`
 	PortStatus  string `json:"port_status"`
 	MinDistance string `json:"min_distance"`
