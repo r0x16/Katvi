@@ -18,6 +18,6 @@ func (m *OltModule) Setup() {
 
 	olt.GET("/frame", m.Bundle.ActionInjection(action.ListFrameAction))
 	olt.GET("/frame/:frameId/slots", m.Bundle.ActionInjection(action.ListBoardAction))
+	olt.GET("/frame/:frameId/ont", m.Bundle.ActionInjection(action.ListOntAction))
 	olt.GET("/slot/:frameId/:boardId/pon", m.Bundle.ActionInjection(action.ListPonAction))
-	olt.GET("/pon/:frameId/:boardId/:ponId/ont", m.Bundle.ActionInjection(action.ListOntAction))
 }

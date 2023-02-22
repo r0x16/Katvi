@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -23,21 +22,7 @@ func ListOntAction(c echo.Context, bundle *drivers.ApplicationBundle) error {
 		return c.JSON(http.StatusBadRequest, errors.New("invalid frameId"))
 	}
 
-	boardId, err := getPonBoardId(c)
-	if err != nil {
-		c.Logger().Error("Invalid boardId")
-		c.Logger().Error(err)
-		return c.JSON(http.StatusBadRequest, errors.New("invalid boardId"))
-	}
-
-	ponId, err := getOntPonId(c)
-	if err != nil {
-		c.Logger().Error("Invalid ponId")
-		c.Logger().Error(err)
-		return c.JSON(http.StatusBadRequest, errors.New("invalid ponId"))
-	}
-
-	lister := getOntLister(frameId, boardId, ponId)
+	lister := getOntLister(frameId)
 	onts, err := lister.List()
 
 	if err != nil {
@@ -51,32 +36,22 @@ func ListOntAction(c echo.Context, bundle *drivers.ApplicationBundle) error {
 	return c.JSON(http.StatusOK, onts)
 }
 
-func getOntPonId(c echo.Context) (int, error) {
-	ponId := c.Param("ponId")
-
-	if ponId == "" {
-		return 0, errors.New("invalid ponId")
-	}
-
-	return strconv.Atoi(ponId)
-}
-
-func getOntLister(frameId int, boardId int, ponId int) *app.OntLister {
-	command := getOntListCommand(frameId, boardId, ponId)
+func getOntLister(frameId int) *app.OntLister {
+	command := getOntListCommand(frameId)
 	connector := &devices.OLTHuaweiSshConnector{}
 
 	return app.ListOnt(command, connector)
 }
 
-func getOntListCommand(frameId int, boardId int, ponId int) *model.DeviceCommand {
+func getOntListCommand(frameId int) *model.DeviceCommand {
 	return &model.DeviceCommand{
 		Commands: []string{
 			"enable",
 			"config",
-			fmt.Sprintf("interface gpon %d/%d", frameId, boardId),
-			fmt.Sprintf("display ont info %d all | no-more", ponId),
-			fmt.Sprintf("display ont info summary %d | no-more", ponId),
+			fmt.Sprintf("display ont info %d all | no-more", frameId),
+			fmt.Sprintf("display ont info summary %d | no-more", frameId),
 			"quit",
+			"display service-port all | no-more",
 			"quit",
 			"quit",
 		},
@@ -88,9 +63,11 @@ func getOntListCommand(frameId int, boardId int, ponId int) *model.DeviceCommand
 			//	(ONT ID) [S/N] (Type) (Distance) (RxPower)/(TxPower) (Description)
 			regexp.MustCompile(`[[:blank:]]+([\d]+)[[:blank:]]+[A-Z0-9]+[[:blank:]]+([A-Za-z0-9\-]+)[[:blank:]]+([0-9\-]+)[[:blank:]]+(-?[\d]*\.?[\d]*)\/(-?[\d]*\.?[\d]*)[[:blank:]]+([[:graph:]]+)`),
 			// In port [frame]/ [board]/[pon], the total of ONTs are: (ONT Total), online: (ONT Online)
-			regexp.MustCompile(fmt.Sprintf(`In port %d/ %d/%d\s*, the total of ONTs are:\s*([\d]+), online:\s*([\d]+)`, frameId, boardId, ponId)),
+			regexp.MustCompile(`In port ([\d]+)/ ([\d]+)/([\d]+)\s*, the total of ONTs are:\s*([\d]+), online:\s*([\d]+)`),
+			// (INDEX) (VLAN-ID) (VLAN ATTR) (PORT-TYPE) (frame)/ (board)/(pon) (ONT ID) (VCI) (Flow type) [FLOW PARA] (RX) (TX) (State)
+			regexp.MustCompile(`[[:blank:]]+([\d]+)[[:blank:]]+([\d]+)[[:blank:]]+([A-Za-z0-9\-]+)[[:blank:]]+([A-Za-z0-9\-]+)[[:blank:]]+([\d]+)/([\d]+)[[:blank:]]*/([\d]+)[[:blank:]]+([\d]+)[[:blank:]]+([\d]+)[[:blank:]]+([A-Za-z0-9\-]+)[[:blank:]]+[\d]+[[:blank:]]+([\d]+)[[:blank:]]+([\d]+)[[:blank:]]+([A-Za-z0-9\-]+)`),
 		},
 		ExitRegex: regexp.MustCompile(`Check whether system data has been changed`),
-		Timeout:   4 * time.Second,
+		Timeout:   6 * time.Second,
 	}
 }
