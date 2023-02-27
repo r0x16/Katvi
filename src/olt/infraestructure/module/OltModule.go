@@ -20,4 +20,5 @@ func (m *OltModule) Setup() {
 	olt.GET("/frame/:frameId/slots", m.Bundle.ActionInjection(action.ListBoardAction))
 	olt.GET("/frame/:frameId/ont", m.Bundle.ActionInjection(action.ListOntAction))
 	olt.GET("/slot/:frameId/:boardId/pon", m.Bundle.ActionInjection(action.ListPonAction))
+	olt.GET("/ont/:frameId/:boardId/:ponId/:ontId/ports", m.Bundle.ActionInjection(action.ListOntPorts))
 }
