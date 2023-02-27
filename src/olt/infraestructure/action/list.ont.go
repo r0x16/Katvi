@@ -50,7 +50,6 @@ func getOntListCommand(frameId int) *model.DeviceCommand {
 			"config",
 			fmt.Sprintf("display ont info %d all | no-more", frameId),
 			fmt.Sprintf("display ont info summary %d | no-more", frameId),
-			"quit",
 			"display service-port all | no-more",
 			"quit",
 			"quit",
