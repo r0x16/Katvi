@@ -55,10 +55,6 @@ func (lister *PonLister) validateOutput(output *model.CommandOutput) error {
 		return errors.New("no output returned from device")
 	}
 
-	if len(output.FilteredOutput[PON_ONT_LIST_INDEX]) == 0 {
-		return errors.New("no ONT port status found")
-	}
-
 	if len(output.FilteredOutput[PON_LIST_INDEX]) != len(output.FilteredOutput[PON_ONT_LIST_INDEX]) {
 		return errors.New("PON and ONT lists are not the same length")
 	}
